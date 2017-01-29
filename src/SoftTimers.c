@@ -20,7 +20,7 @@
 #include "SoftTimers.h"
 
 /*--------------------------- LOCAL DEFINES FOR CONSTANTS ------------------------------*/
-#define TICK_CMP              TMS_SYSTEM_TICK_ISR_CLK / TMS_TIMERS_CLK ///< Comparison value for timers handler
+#define TICK_CMP              SOFTTIMERS_SYSTEM_TICK_ISR_CLK / SOFTTIMERS_TIMERS_CLK ///< Comparison value for timers handler
 #define TIMIER_INIT_VALUE     0xFFFFFFFF                             ///< Initial timer value
 
 /*------------------------------- LOCAL DEFINE MACROS ----------------------------------*/
@@ -42,7 +42,7 @@
 /*------------------------------- EXPORTED OBJECTS -------------------------------------*/
 
 /*-------------------------------- LOCAL OBJECTS ---------------------------------------*/
-static TMS_Timer_T TMS_TimersArray[TMS_NUM_OF_TIMERS]; // Timers array
+static SoftTimers_Timer_T TimersArray[SOFTTIMERS_NUM_OF_TIMERS]; // Timers array
 
 /*======================================================================================*/
 /*                    ####### LOCAL FUNCTIONS PROTOTYPES #######                        */
@@ -59,18 +59,18 @@ static TMS_Timer_T TMS_TimersArray[TMS_NUM_OF_TIMERS]; // Timers array
 /*======================================================================================*/
 /*                 ####### EXPORTED FUNCTIONS DEFINITIONS #######                       */
 /*======================================================================================*/
-void TMS_Init (void)
+void SoftTimers_Init (void)
 {
-  for (uint8_t timerID = 0; timerID < TMS_NUM_OF_TIMERS; timerID++)
+  for (uint8_t timerID = 0; timerID < SOFTTIMERS_NUM_OF_TIMERS; timerID++)
   {
-    TMS_TimersArray[timerID].ticks        = TIMIER_INIT_VALUE;
-    TMS_TimersArray[timerID].timeout      = 0;
-    TMS_TimersArray[timerID].expiredFlag  = false;
-    TMS_TimersArray[timerID].onExpire     = NULL;
+    TimersArray[timerID].ticks        = TIMIER_INIT_VALUE;
+    TimersArray[timerID].timeout      = 0;
+    TimersArray[timerID].expiredFlag  = false;
+    TimersArray[timerID].onExpire     = NULL;
   }
 }
 
-void TMS_TimersHandler (void)
+void SoftTimers_TimersHandler (void)
 {
   static volatile uint32_t ticks = 0;
 
@@ -81,17 +81,17 @@ void TMS_TimersHandler (void)
     /* Clear base ticks */
     ticks = 0;
 
-    for (uint8_t timerID = 0; timerID < TMS_NUM_OF_TIMERS; timerID++)
+    for (uint8_t timerID = 0; timerID < SOFTTIMERS_NUM_OF_TIMERS; timerID++)
     {
-      if (TMS_TimersArray[timerID].expiredFlag != true)
+      if (TimersArray[timerID].expiredFlag != true)
       {
         /* Increment timer ticks */
-        TMS_TimersArray[timerID].ticks++;
+        TimersArray[timerID].ticks++;
 
         /* Check if expires */
-        if (TMS_TimersArray[timerID].ticks == TMS_TimersArray[timerID].timeout)
+        if (TimersArray[timerID].ticks == TimersArray[timerID].timeout)
         {
-          TMS_TimersArray[timerID].expiredFlag = true;
+          TimersArray[timerID].expiredFlag = true;
         }
         else
         {
@@ -110,62 +110,62 @@ void TMS_TimersHandler (void)
   }
 }
 
-TMS_TimerRet_T TMS_StartTimer (TMS_TimerType_T timerType, TMS_TimerID_T timerID, void (*onExpire)(void), TMS_timeoutMS timeout)
+SoftTimers_TimerRet_T SoftTimers_StartTimer (SoftTimers_TimerType_T timerType, SoftTimers_TimerID_T timerID, void (*onExpire)(void), SoftTimers_timeoutMS timeout)
 {
-  TMS_TimerRet_T ret;
-  if (TMS_TimersArray[timerID].ticks <= TMS_TimersArray[timerID].timeout)
+  SoftTimers_TimerRet_T ret;
+  if (TimersArray[timerID].ticks <= TimersArray[timerID].timeout)
   {
-    ret = TMS_TIMER_IN_USE;
+    ret = SOFTTIMERS_TIMER_IN_USE;
   }
   else
   {
-    TMS_TimersArray[timerID].timerType    = timerType;
-    TMS_TimersArray[timerID].timeout      = timeout;
-    TMS_TimersArray[timerID].onExpire     = onExpire;
-    TMS_TimersArray[timerID].ticks        = 0;
-    TMS_TimersArray[timerID].expiredFlag  = false;
+    TimersArray[timerID].timerType    = timerType;
+    TimersArray[timerID].timeout      = timeout;
+    TimersArray[timerID].onExpire     = onExpire;
+    TimersArray[timerID].ticks        = 0;
+    TimersArray[timerID].expiredFlag  = false;
 
-    ret = TMS_TIMER_STARTED;
+    ret = SOFTTIMERS_TIMER_STARTED;
   }
 
   return ret;
 }
 
-void TMS_StopTimer (TMS_TimerID_T timerID)
+void SoftTimers_StopTimer (SoftTimers_TimerID_T timerID)
 {
-  TMS_TimersArray[timerID].ticks        = TIMIER_INIT_VALUE;
-  TMS_TimersArray[timerID].timeout      = 0;
-  TMS_TimersArray[timerID].expiredFlag  = false;
-  TMS_TimersArray[timerID].onExpire     = NULL;
+  TimersArray[timerID].ticks        = TIMIER_INIT_VALUE;
+  TimersArray[timerID].timeout      = 0;
+  TimersArray[timerID].expiredFlag  = false;
+  TimersArray[timerID].onExpire     = NULL;
 }
 
-void TMS_RestartTimer (TMS_TimerID_T timerID)
+void SoftTimers_RestartTimer (SoftTimers_TimerID_T timerID)
 {
-  TMS_TimersArray[timerID].ticks        = 0;
-  TMS_TimersArray[timerID].expiredFlag  = false;
+  TimersArray[timerID].ticks        = 0;
+  TimersArray[timerID].expiredFlag  = false;
 }
 
-void TMS_TimersEventsHandler(void)
+void SoftTimers_TimersEventsHandler(void)
 {
-  for (uint8_t timerID = 0; timerID < TMS_NUM_OF_TIMERS; timerID++)
+  for (uint8_t timerID = 0; timerID < SOFTTIMERS_NUM_OF_TIMERS; timerID++)
   {
-    if (true == TMS_TimersArray[timerID].expiredFlag)
+    if (true == TimersArray[timerID].expiredFlag)
     {
       /* Call timer event if is not NULL */
-      if (TMS_TimersArray[timerID].onExpire != NULL)
+      if (TimersArray[timerID].onExpire != NULL)
       {
-        TMS_TimersArray[timerID].onExpire();
+        TimersArray[timerID].onExpire();
       }
       else { /* Do nothing */ }
 
-      if (TMS_ONE_SHOT == TMS_TimersArray[timerID].timerType)
+      if (SOFTTIMERS_ONE_SHOT == TimersArray[timerID].timerType)
       {
         /* No more calls onExpire function */
-        TMS_TimersArray[timerID].expiredFlag = false;
+        TimersArray[timerID].expiredFlag = false;
       }
-      else // TMS_AUTO_RELOAD
+      else // SOFTTIMERS_AUTO_RELOAD
       {
-        TMS_RestartTimer((TMS_TimerID_T)timerID);
+        SoftTimers_RestartTimer((SoftTimers_TimerID_T)timerID);
       }
     }
     else
@@ -175,15 +175,15 @@ void TMS_TimersEventsHandler(void)
   }
 }
 
-TMS_TimerStatus_T TMS_GetTimerStatus (TMS_TimerID_T timerID)
+SoftTimers_TimerStatus_T SoftTimers_GetTimerStatus (SoftTimers_TimerID_T timerID)
 {
-  if (TMS_TimersArray[timerID].ticks > TMS_TimersArray[timerID].timeout)
+  if (TimersArray[timerID].ticks > TimersArray[timerID].timeout)
   {
-    return TMS_EXPIRED;
+    return SOFTTIMERS_EXPIRED;
   }
   else
   {
-    return TMS_NOT_EXPIRED;
+    return SOFTTIMERS_NOT_EXPIRED;
   }
 }
 

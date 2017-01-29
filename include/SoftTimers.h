@@ -8,8 +8,8 @@
  *          This file contains API of Timers module
  *======================================================================================*/
 /*----------------------- DEFINE TO PREVENT RECURSIVE INCLUSION ------------------------*/
-#ifndef TIMERS_H_
-#define TIMERS_H_
+#ifndef SOFTTIMERS_H_
+#define SOFTTIMERS_H_
 
 /**
  * @defgroup TMS Timers
@@ -32,8 +32,8 @@
  *        Configure System Tick ISR Clock and Timers Clock.
  */
 /**@{*/
-#define TMS_SYSTEM_TICK_ISR_CLK     1000000   ///< System Tick ISR Clock in Hz
-#define TMS_TIMERS_CLK              1000      ///< Timers Clock in Hz
+#define SOFTTIMERS_SYSTEM_TICK_ISR_CLK     1000000   ///< System Tick ISR Clock in Hz
+#define SOFTTIMERS_TIMERS_CLK              1000      ///< Timers Clock in Hz
 /**@}*/
 
 /*------------------------------ EXPORTED DEFINE MACROS --------------------------------*/
@@ -42,59 +42,59 @@
 /*                     ####### EXPORTED TYPE DECLARATIONS #######                       */
 /*======================================================================================*/
 /*-------------------------------- OTHER TYPEDEFS --------------------------------------*/
-typedef uint32_t TMS_timeoutMS;   ///< time in ms
-typedef uint32_t TMS_ticks;       ///< timer ticks
+typedef uint32_t SoftTimers_timeoutMS;   ///< time in ms
+typedef uint32_t SoftTimers_ticks;       ///< timer ticks
 
 /*------------------------------------- ENUMS ------------------------------------------*/
-/** @enum TMS_TimerID_T
+/** @enum SoftTimers_TimerID_T
  *        Timers ID enumerator. For define new timer, add new ID in this enumerator.
  */
 /* ---------------------------- ADD NEW TIMERS HERE!!! -------------------------------*/
-typedef enum TMS_TimerID_Tag
+typedef enum SoftTimers_TimerID_Tag
 {
   SAMPLE_TIMER = 0,            ///<
-  TMS_NUM_OF_TIMERS         ///< ID for count number of timer
-} TMS_TimerID_T;
+  SOFTTIMERS_NUM_OF_TIMERS         ///< ID for count number of timer
+} SoftTimers_TimerID_T;
 
-/** @enum TMS_TimerRet_T
- *        Timer return type enumerator for #TMS_StartTimer.
+/** @enum SoftTimers_TimerRet_T
+ *        Timer return type enumerator for #SoftTimers_StartTimer.
  */
-typedef enum TMS_TimerRet_Tag
+typedef enum SoftTimers_TimerRet_Tag
 {
-  TMS_TIMER_STARTED = 0,    ///< Timer was started successfully
-  TMS_TIMER_IN_USE,         ///< Timer is already in use
-} TMS_TimerRet_T;
+  SOFTTIMERS_TIMER_STARTED = 0,    ///< Timer was started successfully
+  SOFTTIMERS_TIMER_IN_USE,         ///< Timer is already in use
+} SoftTimers_TimerRet_T;
 
-/** @enum TMS_TimerType_T
+/** @enum SoftTimers_TimerType_T
  *        Timer type enumerator.
  */
-typedef enum TMS_TimerType_Tag
+typedef enum SoftTimers_TimerType_Tag
 {
-  TMS_ONE_SHOT = 0,         ///< This timer type expiring only one time
-  TMS_AUTO_RELOAD,          ///< This timer type auto reloads after expiration
-} TMS_TimerType_T;
+  SOFTTIMERS_ONE_SHOT = 0,         ///< This timer type expiring only one time
+  SOFTTIMERS_AUTO_RELOAD,          ///< This timer type auto reloads after expiration
+} SoftTimers_TimerType_T;
 
-/** @enum TMS_TimerStatus_T
+/** @enum SoftTimers_TimerStatus_T
  *        Timers status expiration enumerator.
  */
-typedef enum TMS_TimerStatus_Tag
+typedef enum SoftTimers_TimerStatus_Tag
 {
-  TMS_NOT_EXPIRED = false,         ///< Timer is not expired
-  TMS_EXPIRED     = true           ///< Timer is expired
-} TMS_TimerStatus_T;
+  SOFTTIMERS_NOT_EXPIRED = false,         ///< Timer is not expired
+  SOFTTIMERS_EXPIRED     = true           ///< Timer is expired
+} SoftTimers_TimerStatus_T;
 
 /*------------------------------------ STRUCT ------------------------------------------*/
-/** @struct TMS_Timer_T
+/** @struct SoftTimers_Timer_T
  *          Timer structure.
  */
-typedef struct TMS_Timer_Tag
+typedef struct SoftTimers_Timer_Tag
 {
-  TMS_TimerType_T timerType;          ///< Timer type
-  volatile TMS_ticks ticks;           ///< Timer ticks
-  TMS_timeoutMS timeout;              ///< Timer timeout
+  SoftTimers_TimerType_T timerType;          ///< Timer type
+  volatile SoftTimers_ticks ticks;           ///< Timer ticks
+  SoftTimers_timeoutMS timeout;              ///< Timer timeout
   volatile bool expiredFlag;          ///< Timer expired flag - used for expiration indication
   void (*onExpire)(void);             ///< Pointer to function called on timer expiration event
-} TMS_Timer_T;
+} SoftTimers_Timer_T;
 
 /*------------------------------------ UNIONS ------------------------------------------*/
 
@@ -112,7 +112,7 @@ typedef struct TMS_Timer_Tag
  *
  * @return void
  */
-void TMS_Init (void);
+void SoftTimers_Init (void);
 
 /**
  * @brief Function for handling timers.
@@ -121,7 +121,7 @@ void TMS_Init (void);
  *
  * @return void
  */
-void TMS_TimersHandler (void);
+void SoftTimers_TimersHandler (void);
 
 /**
  * @brief Function for processing timers events.
@@ -130,7 +130,7 @@ void TMS_TimersHandler (void);
  *
  * @return void
  */
-void TMS_TimersEventsHandler(void);
+void SoftTimers_TimersEventsHandler(void);
 
 /**
  * @brief Function for starting timers.
@@ -144,7 +144,7 @@ void TMS_TimersEventsHandler(void);
  *
  * @return void
  */
-TMS_TimerRet_T TMS_StartTimer (TMS_TimerType_T timerType, TMS_TimerID_T timerID, void (*onExpire)(void), TMS_timeoutMS timeout);
+SoftTimers_TimerRet_T SoftTimers_StartTimer (SoftTimers_TimerType_T timerType, SoftTimers_TimerID_T timerID, void (*onExpire)(void), SoftTimers_timeoutMS timeout);
 
 /**
  * @brief Function for stopping timer.
@@ -155,7 +155,7 @@ TMS_TimerRet_T TMS_StartTimer (TMS_TimerType_T timerType, TMS_TimerID_T timerID,
  *
  * @return void
  */
-void TMS_StopTimer (TMS_TimerID_T timerID);
+void SoftTimers_StopTimer (SoftTimers_TimerID_T timerID);
 
 /**
  * @brief Function for restarting timer.
@@ -166,7 +166,7 @@ void TMS_StopTimer (TMS_TimerID_T timerID);
  *
  * @return void
  */
-void TMS_RestartTimer (TMS_TimerID_T timerID);
+void SoftTimers_RestartTimer (SoftTimers_TimerID_T timerID);
 
 /**
  * @brief Function for getting timer status.
@@ -178,7 +178,7 @@ void TMS_RestartTimer (TMS_TimerID_T timerID);
  * @return true if expired
  * @return false if not expired
  */
-TMS_TimerStatus_T TMS_GetTimerStatus (TMS_TimerID_T timerID);
+SoftTimers_TimerStatus_T SoftTimers_GetTimerStatus (SoftTimers_TimerID_T timerID);
 
 /*======================================================================================*/
 /*         ####### EXPORTED INLINE FUNCTIONS AND FUNCTION-LIKE MACROS #######           */
@@ -188,4 +188,4 @@ TMS_TimerStatus_T TMS_GetTimerStatus (TMS_TimerID_T timerID);
  * @}
  */
 
-#endif /* TIMERS_H_ */
+#endif /* SOFTTIMERS_H_ */
