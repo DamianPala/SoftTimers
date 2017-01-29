@@ -1,13 +1,12 @@
 /*=======================================================================================*
  * @file    Timers.c
  * @author  Damian Pala
- * @version 0.1
  * @date    03-12-2016
- * @brief   This file contains all implementations for Timers module.
+ * @brief   This file contains all implementations for Soft Timers module.
  *======================================================================================*/
 
 /**
- * @addtogroup TMS Timers
+ * @addtogroup Soft Timers Timers
  * @{
  * @brief Module for creation software timers.
  */
@@ -18,7 +17,7 @@
 /*---------------------- INCLUDE DIRECTIVES FOR STANDARD HEADERS -----------------------*/
 
 /*----------------------- INCLUDE DIRECTIVES FOR OTHER HEADERS -------------------------*/
-#include "Timers.h"
+#include "SoftTimers.h"
 
 /*--------------------------- LOCAL DEFINES FOR CONSTANTS ------------------------------*/
 #define TICK_CMP              TMS_SYSTEM_TICK_ISR_CLK / TMS_TIMERS_CLK ///< Comparison value for timers handler
