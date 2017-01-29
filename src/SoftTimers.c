@@ -20,12 +20,19 @@
 #include "SoftTimers.h"
 
 /*----------------------------- LOCAL OBJECT-LIKE MACROS -------------------------------*/
-#define TICK_CMP                    SFTM_SYSTEM_TICK_ISR_CLK / SFTM_TIMERS_CLK    ///< Comparison value for timers handler
-#define TIMIER_IDLE_VALUE           0xFFFFFFFF                                    ///< Initial timer value
-#define MAX_TIMERS_NUMBER_REACHED   0xFF    ///< Maximum number of timers in system
+/** @name Timers module configuration.
+ *        Configure System Tick ISR Clock, Timers Clock and some other things.
+ */
+/**@{*/
+#define SYSTEM_TICK_ISR_CLK     1000000    ///< System Tick ISR Clock in Hz
+#define TIMERS_CLK              1000       ///< Timers Clock in Hz
+#define MAX_TIMER_SLOTS         16         ///< Adjust this value according to your needs
+/**@}*/
 
-#define FIRST_TIMER_HANDLE          1       ///< Do not touch it!!!
-#define MAX_TIMER_SLOTS             32      ///< Adjust this value according to your needs
+#define TICK_CMP                    SYSTEM_TICK_ISR_CLK / TIMERS_CLK    ///< Comparison value for timers handler
+#define TIMIER_IDLE_VALUE           0xFFFFFFFF                          ///< Initial timer value
+#define MAX_TIMERS_NUMBER_REACHED   0xFF                                ///< Maximum number of timers in system
+#define FIRST_TIMER_HANDLE          1                                   ///< Do not touch it!!!
 
 #if (MAX_TIMER_SLOTS > MAX_TIMERS_NUMBER_REACHED )
   #error "Maximum timer slots reached! Please decrease timer slot number."

@@ -27,13 +27,6 @@
 #include "cmsis_device.h"
 
 /*----------------------------- LOCAL OBJECT-LIKE MACROS -------------------------------*/
-/** @name Timers module configuration.
- *        Configure System Tick ISR Clock and Timers Clock.
- */
-/**@{*/
-#define SFTM_SYSTEM_TICK_ISR_CLK     1000000   ///< System Tick ISR Clock in Hz
-#define SFTM_TIMERS_CLK              1000      ///< Timers Clock in Hz
-/**@}*/
 
 /*---------------------------- LOCAL FUNCTION-LIKE MACROS ------------------------------*/
 
@@ -45,7 +38,6 @@ typedef uint8_t SFTM_TimerHandle_T;           ///< timer handle
 typedef void (*SFTM_TimerCallback)(void);     ///< timer callback on expire event
 typedef uint32_t SFTM_timeoutMS;              ///< time in ms
 typedef uint32_t SFTM_ticks;                  ///< timer ticks
-
 
 /*------------------------------------- ENUMS ------------------------------------------*/
 /** @enum SFTM_TimerRet_T
@@ -85,7 +77,7 @@ typedef struct SFTM_Timer_Tag
   volatile SFTM_ticks ticks;            ///< Timer ticks
   SFTM_timeoutMS timeout;               ///< Timer timeout
   volatile bool expiredFlag;            ///< Timer expired flag - used for expiration indication
-  void (*onExpire)(void);               ///< Pointer to function called on timer expiration event
+  SFTM_TimerCallback onExpire;          ///< Pointer to function called on timer expiration event
 } SFTM_Timer_T;
 
 /*======================================================================================*/
