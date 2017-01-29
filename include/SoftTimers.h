@@ -1,11 +1,10 @@
 /*=======================================================================================*
- * @file    Timers.h
+ * @file    SoftTimers.h
  * @author  Damian Pala
- * @version 0.1
  * @date    03-12-2016
- * @brief   Header file for Timers module
+ * @brief   Header file for Soft Timers module
  *
- *          This file contains API of Timers module
+ *          This file contains API of Soft Timers module
  *======================================================================================*/
 /*----------------------- DEFINE TO PREVENT RECURSIVE INCLUSION ------------------------*/
 #ifndef SOFTTIMERS_H_
@@ -32,8 +31,8 @@
  *        Configure System Tick ISR Clock and Timers Clock.
  */
 /**@{*/
-#define SOFTTIMERS_SYSTEM_TICK_ISR_CLK     1000000   ///< System Tick ISR Clock in Hz
-#define SOFTTIMERS_TIMERS_CLK              1000      ///< Timers Clock in Hz
+#define SFTM_SYSTEM_TICK_ISR_CLK     1000000   ///< System Tick ISR Clock in Hz
+#define SFTM_TIMERS_CLK              1000      ///< Timers Clock in Hz
 /**@}*/
 
 /*------------------------------ EXPORTED DEFINE MACROS --------------------------------*/
@@ -42,59 +41,59 @@
 /*                     ####### EXPORTED TYPE DECLARATIONS #######                       */
 /*======================================================================================*/
 /*-------------------------------- OTHER TYPEDEFS --------------------------------------*/
-typedef uint32_t SoftTimers_timeoutMS;   ///< time in ms
-typedef uint32_t SoftTimers_ticks;       ///< timer ticks
+typedef uint32_t SFTM_timeoutMS;   ///< time in ms
+typedef uint32_t SFTM_ticks;       ///< timer ticks
 
 /*------------------------------------- ENUMS ------------------------------------------*/
-/** @enum SoftTimers_TimerID_T
+/** @enum SFTM_TimerID_T
  *        Timers ID enumerator. For define new timer, add new ID in this enumerator.
  */
 /* ---------------------------- ADD NEW TIMERS HERE!!! -------------------------------*/
-typedef enum SoftTimers_TimerID_Tag
+typedef enum SFTM_TimerID_Tag
 {
   SAMPLE_TIMER = 0,            ///<
-  SOFTTIMERS_NUM_OF_TIMERS         ///< ID for count number of timer
-} SoftTimers_TimerID_T;
+  SFTM_NUM_OF_TIMERS         ///< ID for count number of timer
+} SFTM_TimerID_T;
 
-/** @enum SoftTimers_TimerRet_T
- *        Timer return type enumerator for #SoftTimers_StartTimer.
+/** @enum SFTM_TimerRet_T
+ *        Timer return type enumerator for #SFTM_StartTimer.
  */
-typedef enum SoftTimers_TimerRet_Tag
+typedef enum SFTM_TimerRet_Tag
 {
-  SOFTTIMERS_TIMER_STARTED = 0,    ///< Timer was started successfully
-  SOFTTIMERS_TIMER_IN_USE,         ///< Timer is already in use
-} SoftTimers_TimerRet_T;
+  SFTM_TIMER_STARTED = 0,    ///< Timer was started successfully
+  SFTM_TIMER_IN_USE,         ///< Timer is already in use
+} SFTM_TimerRet_T;
 
-/** @enum SoftTimers_TimerType_T
+/** @enum SFTM_TimerType_T
  *        Timer type enumerator.
  */
-typedef enum SoftTimers_TimerType_Tag
+typedef enum SFTM_TimerType_Tag
 {
-  SOFTTIMERS_ONE_SHOT = 0,         ///< This timer type expiring only one time
-  SOFTTIMERS_AUTO_RELOAD,          ///< This timer type auto reloads after expiration
-} SoftTimers_TimerType_T;
+  SFTM_ONE_SHOT = 0,         ///< This timer type expiring only one time
+  SFTM_AUTO_RELOAD,          ///< This timer type auto reloads after expiration
+} SFTM_TimerType_T;
 
-/** @enum SoftTimers_TimerStatus_T
+/** @enum SFTM_TimerStatus_T
  *        Timers status expiration enumerator.
  */
-typedef enum SoftTimers_TimerStatus_Tag
+typedef enum SFTM_TimerStatus_Tag
 {
-  SOFTTIMERS_NOT_EXPIRED = false,         ///< Timer is not expired
-  SOFTTIMERS_EXPIRED     = true           ///< Timer is expired
-} SoftTimers_TimerStatus_T;
+  SFTM_NOT_EXPIRED = false,         ///< Timer is not expired
+  SFTM_EXPIRED     = true           ///< Timer is expired
+} SFTM_TimerStatus_T;
 
 /*------------------------------------ STRUCT ------------------------------------------*/
-/** @struct SoftTimers_Timer_T
+/** @struct SFTM_Timer_T
  *          Timer structure.
  */
-typedef struct SoftTimers_Timer_Tag
+typedef struct SFTM_Timer_Tag
 {
-  SoftTimers_TimerType_T timerType;          ///< Timer type
-  volatile SoftTimers_ticks ticks;           ///< Timer ticks
-  SoftTimers_timeoutMS timeout;              ///< Timer timeout
+  SFTM_TimerType_T timerType;          ///< Timer type
+  volatile SFTM_ticks ticks;           ///< Timer ticks
+  SFTM_timeoutMS timeout;              ///< Timer timeout
   volatile bool expiredFlag;          ///< Timer expired flag - used for expiration indication
   void (*onExpire)(void);             ///< Pointer to function called on timer expiration event
-} SoftTimers_Timer_T;
+} SFTM_Timer_T;
 
 /*------------------------------------ UNIONS ------------------------------------------*/
 
@@ -112,7 +111,7 @@ typedef struct SoftTimers_Timer_Tag
  *
  * @return void
  */
-void SoftTimers_Init (void);
+void SFTM_Init (void);
 
 /**
  * @brief Function for handling timers.
@@ -121,7 +120,7 @@ void SoftTimers_Init (void);
  *
  * @return void
  */
-void SoftTimers_TimersHandler (void);
+void SFTM_TimersHandler (void);
 
 /**
  * @brief Function for processing timers events.
@@ -130,7 +129,7 @@ void SoftTimers_TimersHandler (void);
  *
  * @return void
  */
-void SoftTimers_TimersEventsHandler(void);
+void SFTM_TimersEventsHandler(void);
 
 /**
  * @brief Function for starting timers.
@@ -144,7 +143,7 @@ void SoftTimers_TimersEventsHandler(void);
  *
  * @return void
  */
-SoftTimers_TimerRet_T SoftTimers_StartTimer (SoftTimers_TimerType_T timerType, SoftTimers_TimerID_T timerID, void (*onExpire)(void), SoftTimers_timeoutMS timeout);
+SFTM_TimerRet_T SFTM_StartTimer (SFTM_TimerType_T timerType, SFTM_TimerID_T timerID, void (*onExpire)(void), SFTM_timeoutMS timeout);
 
 /**
  * @brief Function for stopping timer.
@@ -155,7 +154,7 @@ SoftTimers_TimerRet_T SoftTimers_StartTimer (SoftTimers_TimerType_T timerType, S
  *
  * @return void
  */
-void SoftTimers_StopTimer (SoftTimers_TimerID_T timerID);
+void SFTM_StopTimer (SFTM_TimerID_T timerID);
 
 /**
  * @brief Function for restarting timer.
@@ -166,7 +165,7 @@ void SoftTimers_StopTimer (SoftTimers_TimerID_T timerID);
  *
  * @return void
  */
-void SoftTimers_RestartTimer (SoftTimers_TimerID_T timerID);
+void SFTM_RestartTimer (SFTM_TimerID_T timerID);
 
 /**
  * @brief Function for getting timer status.
@@ -178,7 +177,7 @@ void SoftTimers_RestartTimer (SoftTimers_TimerID_T timerID);
  * @return true if expired
  * @return false if not expired
  */
-SoftTimers_TimerStatus_T SoftTimers_GetTimerStatus (SoftTimers_TimerID_T timerID);
+SFTM_TimerStatus_T SFTM_GetTimerStatus (SFTM_TimerID_T timerID);
 
 /*======================================================================================*/
 /*         ####### EXPORTED INLINE FUNCTIONS AND FUNCTION-LIKE MACROS #######           */

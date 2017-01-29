@@ -1,5 +1,5 @@
 /*=======================================================================================*
- * @file    Timers.c
+ * @file    SFTM.c
  * @author  Damian Pala
  * @date    03-12-2016
  * @brief   This file contains all implementations for Soft Timers module.
@@ -20,7 +20,7 @@
 #include "SoftTimers.h"
 
 /*--------------------------- LOCAL DEFINES FOR CONSTANTS ------------------------------*/
-#define TICK_CMP              SOFTTIMERS_SYSTEM_TICK_ISR_CLK / SOFTTIMERS_TIMERS_CLK ///< Comparison value for timers handler
+#define TICK_CMP              SFTM_SYSTEM_TICK_ISR_CLK / SFTM_TIMERS_CLK ///< Comparison value for timers handler
 #define TIMIER_INIT_VALUE     0xFFFFFFFF                             ///< Initial timer value
 
 /*------------------------------- LOCAL DEFINE MACROS ----------------------------------*/
@@ -42,7 +42,7 @@
 /*------------------------------- EXPORTED OBJECTS -------------------------------------*/
 
 /*-------------------------------- LOCAL OBJECTS ---------------------------------------*/
-static SoftTimers_Timer_T TimersArray[SOFTTIMERS_NUM_OF_TIMERS]; // Timers array
+static SFTM_Timer_T TimersArray[SFTM_NUM_OF_TIMERS]; // Timers array
 
 /*======================================================================================*/
 /*                    ####### LOCAL FUNCTIONS PROTOTYPES #######                        */
@@ -59,9 +59,9 @@ static SoftTimers_Timer_T TimersArray[SOFTTIMERS_NUM_OF_TIMERS]; // Timers array
 /*======================================================================================*/
 /*                 ####### EXPORTED FUNCTIONS DEFINITIONS #######                       */
 /*======================================================================================*/
-void SoftTimers_Init (void)
+void SFTM_Init (void)
 {
-  for (uint8_t timerID = 0; timerID < SOFTTIMERS_NUM_OF_TIMERS; timerID++)
+  for (uint8_t timerID = 0; timerID < SFTM_NUM_OF_TIMERS; timerID++)
   {
     TimersArray[timerID].ticks        = TIMIER_INIT_VALUE;
     TimersArray[timerID].timeout      = 0;
@@ -70,7 +70,7 @@ void SoftTimers_Init (void)
   }
 }
 
-void SoftTimers_TimersHandler (void)
+void SFTM_TimersHandler (void)
 {
   static volatile uint32_t ticks = 0;
 
@@ -81,7 +81,7 @@ void SoftTimers_TimersHandler (void)
     /* Clear base ticks */
     ticks = 0;
 
-    for (uint8_t timerID = 0; timerID < SOFTTIMERS_NUM_OF_TIMERS; timerID++)
+    for (uint8_t timerID = 0; timerID < SFTM_NUM_OF_TIMERS; timerID++)
     {
       if (TimersArray[timerID].expiredFlag != true)
       {
@@ -110,12 +110,12 @@ void SoftTimers_TimersHandler (void)
   }
 }
 
-SoftTimers_TimerRet_T SoftTimers_StartTimer (SoftTimers_TimerType_T timerType, SoftTimers_TimerID_T timerID, void (*onExpire)(void), SoftTimers_timeoutMS timeout)
+SFTM_TimerRet_T SFTM_StartTimer (SFTM_TimerType_T timerType, SFTM_TimerID_T timerID, void (*onExpire)(void), SFTM_timeoutMS timeout)
 {
-  SoftTimers_TimerRet_T ret;
+  SFTM_TimerRet_T ret;
   if (TimersArray[timerID].ticks <= TimersArray[timerID].timeout)
   {
-    ret = SOFTTIMERS_TIMER_IN_USE;
+    ret = SFTM_TIMER_IN_USE;
   }
   else
   {
@@ -125,13 +125,13 @@ SoftTimers_TimerRet_T SoftTimers_StartTimer (SoftTimers_TimerType_T timerType, S
     TimersArray[timerID].ticks        = 0;
     TimersArray[timerID].expiredFlag  = false;
 
-    ret = SOFTTIMERS_TIMER_STARTED;
+    ret = SFTM_TIMER_STARTED;
   }
 
   return ret;
 }
 
-void SoftTimers_StopTimer (SoftTimers_TimerID_T timerID)
+void SFTM_StopTimer (SFTM_TimerID_T timerID)
 {
   TimersArray[timerID].ticks        = TIMIER_INIT_VALUE;
   TimersArray[timerID].timeout      = 0;
@@ -139,15 +139,15 @@ void SoftTimers_StopTimer (SoftTimers_TimerID_T timerID)
   TimersArray[timerID].onExpire     = NULL;
 }
 
-void SoftTimers_RestartTimer (SoftTimers_TimerID_T timerID)
+void SFTM_RestartTimer (SFTM_TimerID_T timerID)
 {
   TimersArray[timerID].ticks        = 0;
   TimersArray[timerID].expiredFlag  = false;
 }
 
-void SoftTimers_TimersEventsHandler(void)
+void SFTM_TimersEventsHandler(void)
 {
-  for (uint8_t timerID = 0; timerID < SOFTTIMERS_NUM_OF_TIMERS; timerID++)
+  for (uint8_t timerID = 0; timerID < SFTM_NUM_OF_TIMERS; timerID++)
   {
     if (true == TimersArray[timerID].expiredFlag)
     {
@@ -158,14 +158,14 @@ void SoftTimers_TimersEventsHandler(void)
       }
       else { /* Do nothing */ }
 
-      if (SOFTTIMERS_ONE_SHOT == TimersArray[timerID].timerType)
+      if (SFTM_ONE_SHOT == TimersArray[timerID].timerType)
       {
         /* No more calls onExpire function */
         TimersArray[timerID].expiredFlag = false;
       }
-      else // SOFTTIMERS_AUTO_RELOAD
+      else // SFTM_AUTO_RELOAD
       {
-        SoftTimers_RestartTimer((SoftTimers_TimerID_T)timerID);
+        SFTM_RestartTimer((SFTM_TimerID_T)timerID);
       }
     }
     else
@@ -175,15 +175,15 @@ void SoftTimers_TimersEventsHandler(void)
   }
 }
 
-SoftTimers_TimerStatus_T SoftTimers_GetTimerStatus (SoftTimers_TimerID_T timerID)
+SFTM_TimerStatus_T SFTM_GetTimerStatus (SFTM_TimerID_T timerID)
 {
   if (TimersArray[timerID].ticks > TimersArray[timerID].timeout)
   {
-    return SOFTTIMERS_EXPIRED;
+    return SFTM_EXPIRED;
   }
   else
   {
-    return SOFTTIMERS_NOT_EXPIRED;
+    return SFTM_NOT_EXPIRED;
   }
 }
 
