@@ -11,7 +11,7 @@
 #define SOFTTIMERS_H_
 
 /**
- * @defgroup TMS Timers
+ * @defgroup SFTM Soft Timers Timers
  * @{
  * @brief Module for creation software timers.
  */
@@ -26,7 +26,7 @@
 /*----------------------- INCLUDE DIRECTIVES FOR OTHER HEADERS -------------------------*/
 #include "cmsis_device.h"
 
-/*-------------------------- EXPORTED DEFINES FOR CONSTANTS ----------------------------*/
+/*----------------------------- LOCAL OBJECT-LIKE MACROS -------------------------------*/
 /** @name Timers module configuration.
  *        Configure System Tick ISR Clock and Timers Clock.
  */
@@ -35,26 +35,19 @@
 #define SFTM_TIMERS_CLK              1000      ///< Timers Clock in Hz
 /**@}*/
 
-/*------------------------------ EXPORTED DEFINE MACROS --------------------------------*/
+/*---------------------------- LOCAL FUNCTION-LIKE MACROS ------------------------------*/
 
 /*======================================================================================*/
 /*                     ####### EXPORTED TYPE DECLARATIONS #######                       */
 /*======================================================================================*/
 /*-------------------------------- OTHER TYPEDEFS --------------------------------------*/
-typedef uint32_t SFTM_timeoutMS;   ///< time in ms
-typedef uint32_t SFTM_ticks;       ///< timer ticks
+typedef uint8_t SFTM_TimerHandle_T;           ///< timer handle
+typedef void (*SFTM_TimerCallback)(void);     ///< timer callback on expire event
+typedef uint32_t SFTM_timeoutMS;              ///< time in ms
+typedef uint32_t SFTM_ticks;                  ///< timer ticks
+
 
 /*------------------------------------- ENUMS ------------------------------------------*/
-/** @enum SFTM_TimerID_T
- *        Timers ID enumerator. For define new timer, add new ID in this enumerator.
- */
-/* ---------------------------- ADD NEW TIMERS HERE!!! -------------------------------*/
-typedef enum SFTM_TimerID_Tag
-{
-  SAMPLE_TIMER = 0,            ///<
-  SFTM_NUM_OF_TIMERS         ///< ID for count number of timer
-} SFTM_TimerID_T;
-
 /** @enum SFTM_TimerRet_T
  *        Timer return type enumerator for #SFTM_StartTimer.
  */
@@ -82,20 +75,18 @@ typedef enum SFTM_TimerStatus_Tag
   SFTM_EXPIRED     = true           ///< Timer is expired
 } SFTM_TimerStatus_T;
 
-/*------------------------------------ STRUCT ------------------------------------------*/
+/*------------------------------- STRUCT AND UNIONS ------------------------------------*/
 /** @struct SFTM_Timer_T
  *          Timer structure.
  */
 typedef struct SFTM_Timer_Tag
 {
-  SFTM_TimerType_T timerType;          ///< Timer type
-  volatile SFTM_ticks ticks;           ///< Timer ticks
-  SFTM_timeoutMS timeout;              ///< Timer timeout
-  volatile bool expiredFlag;          ///< Timer expired flag - used for expiration indication
-  void (*onExpire)(void);             ///< Pointer to function called on timer expiration event
+  SFTM_TimerType_T timerType;           ///< Timer type
+  volatile SFTM_ticks ticks;            ///< Timer ticks
+  SFTM_timeoutMS timeout;               ///< Timer timeout
+  volatile bool expiredFlag;            ///< Timer expired flag - used for expiration indication
+  void (*onExpire)(void);               ///< Pointer to function called on timer expiration event
 } SFTM_Timer_T;
-
-/*------------------------------------ UNIONS ------------------------------------------*/
 
 /*======================================================================================*/
 /*                    ####### EXPORTED OBJECT DECLARATIONS #######                      */
@@ -111,7 +102,7 @@ typedef struct SFTM_Timer_Tag
  *
  * @return void
  */
-void SFTM_Init (void);
+void SFTM_Init(void);
 
 /**
  * @brief Function for handling timers.
@@ -120,7 +111,7 @@ void SFTM_Init (void);
  *
  * @return void
  */
-void SFTM_TimersHandler (void);
+void SFTM_TimersHandler(void);
 
 /**
  * @brief Function for processing timers events.
@@ -132,56 +123,74 @@ void SFTM_TimersHandler (void);
 void SFTM_TimersEventsHandler(void);
 
 /**
+ * @brief Function for create timers.
+ *
+ *        This function creates given timer.
+ *
+ * @return SFTM_TimerHandle_T - handle of created timer.
+ */
+SFTM_TimerHandle_T SFTM_CreateTimer(void);
+
+/**
  * @brief Function for starting timers.
  *
  *        This function starts given timer.
  *
+ * @param [in] timerHandle of started timer.
  * @param [in] timerType of started timer.
- * @param [in] timerID of started timer.
  * @param [in] onExpire is a pointer for function called when timer expires.
  * @param [in] timeout is a time of timer period.
  *
  * @return void
  */
-SFTM_TimerRet_T SFTM_StartTimer (SFTM_TimerType_T timerType, SFTM_TimerID_T timerID, void (*onExpire)(void), SFTM_timeoutMS timeout);
+SFTM_TimerRet_T SFTM_StartTimer(SFTM_TimerHandle_T timerHandle, SFTM_TimerType_T timerType, SFTM_TimerCallback onExpire, SFTM_timeoutMS timeout);
 
 /**
  * @brief Function for stopping timer.
  *
  *        This function stops timer of given ID.
  *
- * @param [in] timerID of started timer.
+ * @param [in] timerHandle of started timer.
  *
  * @return void
  */
-void SFTM_StopTimer (SFTM_TimerID_T timerID);
+void SFTM_StopTimer(SFTM_TimerHandle_T timerHandle);
 
 /**
  * @brief Function for restarting timer.
  *
  *        This function restarts timer of given ID.
  *
- * @param [in] timerID of started timer.
+ * @param [in] timerHandle of started timer.
  *
  * @return void
  */
-void SFTM_RestartTimer (SFTM_TimerID_T timerID);
+void SFTM_RestartTimer(SFTM_TimerHandle_T timerHandle);
 
 /**
  * @brief Function for getting timer status.
  *
  *        This function gets status of certain timer by given ID.
  *
- * @param [in] timerID of started timer.
+ * @param [in] timerHandle of started timer.
  *
  * @return true if expired
  * @return false if not expired
  */
-SFTM_TimerStatus_T SFTM_GetTimerStatus (SFTM_TimerID_T timerID);
+SFTM_TimerStatus_T SFTM_GetTimerStatus(SFTM_TimerHandle_T timerHandle);
 
-/*======================================================================================*/
-/*         ####### EXPORTED INLINE FUNCTIONS AND FUNCTION-LIKE MACROS #######           */
-/*======================================================================================*/
+/**
+ * @brief Function for make hard fault.
+ *
+ *        If your have your own hard fault implementation, call it in this function rather than current implementation.
+ *
+ * @return void
+ */
+static inline void SFTM_ExecuteHardFault(void)
+{
+  void (*Fault)(void) = NULL;
+  Fault();
+}
 
 /**
  * @}

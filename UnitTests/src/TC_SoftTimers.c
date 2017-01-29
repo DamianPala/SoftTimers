@@ -20,7 +20,7 @@
 #include "unity.h"
 #include "unity_fixture.h"
 
-#include "Timers.c"
+#include "SoftTimers.c"
 
 /*----------------------------- LOCAL OBJECT-LIKE MACROS -------------------------------*/
 
@@ -56,7 +56,7 @@ TEST_GROUP(SoftTimers);
 /*======================================================================================*/
 TEST_SETUP(SoftTimers)
 {
-  TMS_Init();
+  SFTM_Init();
 }
 
 TEST_TEAR_DOWN(SoftTimers)
@@ -68,13 +68,15 @@ TEST(SoftTimers, TMS_TimersHandler_should_SetExpiredTimerFlagWhenTimerReachesTim
 {
   const uint32_t timeout = 10;
   uint32_t timersHandlerTicks = TICK_CMP * timeout;
+  SFTM_TimerHandle_T testedTimer;
 
-  TMS_StartTimer(TMS_ONE_SHOT, SAMPLE_TIMER, NULL, timeout);
+  testedTimer = SFTM_CreateTimer();
+  SFTM_StartTimer(testedTimer, SFTM_ONE_SHOT, NULL, timeout);
   for (uint32_t cnt = 0; cnt < timersHandlerTicks; cnt++)
   {
-    TMS_TimersHandler();
+    SFTM_TimersHandler();
   }
-  TEST_ASSERT_TRUE(TMS_TimersArray[SAMPLE_TIMER].expiredFlag);
+  TEST_ASSERT_TRUE(TimersArray[testedTimer].expiredFlag);
 }
 
 /**
