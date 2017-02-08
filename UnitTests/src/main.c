@@ -18,7 +18,11 @@
 /*======================================================================================*/
 TEST_GROUP_RUNNER(SoftTimers)
 {
-  RUN_TEST_CASE(SoftTimers, TMS_TimersHandler_should_SetExpiredTimerFlagWhenTimerReachesTimeout);
+  RUN_TEST_CASE(SoftTimers, SFTM_Init_should_InitializeTimersSlotsProperly);
+  RUN_TEST_CASE(SoftTimers, Timer_should_CallOnExpireOnlyOneTimeWhenItIsSingleShotType);
+  RUN_TEST_CASE(SoftTimers, Timer_should_CallOnExpireWhenTimerReachesTimeoutOnFirstTimerSlot);
+  RUN_TEST_CASE(SoftTimers, Timer_should_CallOnExpireWhenTimerReachesTimeoutOnLastTimerSlot);
+  RUN_TEST_CASE(SoftTimers, Timer_should_CallOnExpireEveryExpirationWhenItIsAutoreloaded);
 }
 
 /*======================================================================================*/

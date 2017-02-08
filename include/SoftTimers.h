@@ -96,6 +96,7 @@ typedef struct SFTM_Timer_Tag
  */
 void SFTM_Init(void);
 
+
 /**
  * @brief Function for handling timers.
  *
@@ -104,6 +105,7 @@ void SFTM_Init(void);
  * @return void
  */
 void SFTM_TimersHandler(void);
+
 
 /**
  * @brief Function for processing timers events.
@@ -114,6 +116,7 @@ void SFTM_TimersHandler(void);
  */
 void SFTM_TimersEventsHandler(void);
 
+
 /**
  * @brief Function for create timers.
  *
@@ -122,6 +125,7 @@ void SFTM_TimersEventsHandler(void);
  * @return SFTM_TimerHandle_T - handle of created timer.
  */
 SFTM_TimerHandle_T SFTM_CreateTimer(void);
+
 
 /**
  * @brief Function for starting timers.
@@ -137,6 +141,7 @@ SFTM_TimerHandle_T SFTM_CreateTimer(void);
  */
 SFTM_TimerRet_T SFTM_StartTimer(SFTM_TimerHandle_T timerHandle, SFTM_TimerType_T timerType, SFTM_TimerCallback onExpire, SFTM_timeoutMS timeout);
 
+
 /**
  * @brief Function for stopping timer.
  *
@@ -147,6 +152,7 @@ SFTM_TimerRet_T SFTM_StartTimer(SFTM_TimerHandle_T timerHandle, SFTM_TimerType_T
  * @return void
  */
 void SFTM_StopTimer(SFTM_TimerHandle_T timerHandle);
+
 
 /**
  * @brief Function for restarting timer.
@@ -159,6 +165,7 @@ void SFTM_StopTimer(SFTM_TimerHandle_T timerHandle);
  */
 void SFTM_RestartTimer(SFTM_TimerHandle_T timerHandle);
 
+
 /**
  * @brief Function for getting timer status.
  *
@@ -166,10 +173,27 @@ void SFTM_RestartTimer(SFTM_TimerHandle_T timerHandle);
  *
  * @param [in] timerHandle of started timer.
  *
- * @return true if expired
- * @return false if not expired
+ * @retval true if expired
+ * @retval false if not expired
  */
 SFTM_TimerStatus_T SFTM_GetTimerStatus(SFTM_TimerHandle_T timerHandle);
+
+
+/**
+ * @brief Function for getting current timers number in system.
+ *
+ * @return number of timers
+ */
+uint8_t SFTM_GetCurrentTimersNumberInSystem(void);
+
+
+/**
+ * @brief Function for getting maximal timers number in system.
+ *
+ * @return number of timers
+ */
+uint8_t SFTM_MaxTimersNumberInSystem(void);
+
 
 /**
  * @brief Function for make hard fault.

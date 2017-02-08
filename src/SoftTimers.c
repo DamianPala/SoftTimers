@@ -26,7 +26,7 @@
 /**@{*/
 #define SYSTEM_TICK_ISR_CLK     1000000    ///< System Tick ISR Clock in Hz
 #define TIMERS_CLK              1000       ///< Timers Clock in Hz
-#define MAX_TIMER_SLOTS         16         ///< Adjust this value according to your needs
+#define MAX_TIMER_SLOTS         8          ///< Adjust this value according to your needs
 /**@}*/
 
 #define TICK_CMP                    SYSTEM_TICK_ISR_CLK / TIMERS_CLK    ///< Comparison value for timers handler
@@ -39,6 +39,7 @@
 #endif
 
 /*---------------------------- LOCAL FUNCTION-LIKE MACROS ------------------------------*/
+#define GET_TIMER_SLOT(timer_handle)          (timer_handle - FIRST_TIMER_HANDLE)
 
 /*======================================================================================*/
 /*                      ####### LOCAL TYPE DECLARATIONS #######                         */
@@ -73,10 +74,10 @@ void SFTM_Init(void)
 {
   for (SFTM_TimerHandle_T timerHandle = FIRST_TIMER_HANDLE; timerHandle < MAX_TIMER_SLOTS + FIRST_TIMER_HANDLE; timerHandle++)
   {
-    TimersArray[timerHandle].ticks        = TIMIER_IDLE_VALUE;
-    TimersArray[timerHandle].timeout      = 0;
-    TimersArray[timerHandle].expiredFlag  = false;
-    TimersArray[timerHandle].onExpire     = NULL;
+    TimersArray[GET_TIMER_SLOT(timerHandle)].ticks        = TIMIER_IDLE_VALUE;
+    TimersArray[GET_TIMER_SLOT(timerHandle)].timeout      = 0;
+    TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag  = false;
+    TimersArray[GET_TIMER_SLOT(timerHandle)].onExpire     = NULL;
   }
 }
 
@@ -93,15 +94,15 @@ void SFTM_TimersHandler(void)
 
     for (SFTM_TimerHandle_T timerHandle = FIRST_TIMER_HANDLE; timerHandle < MAX_TIMER_SLOTS + FIRST_TIMER_HANDLE; timerHandle++)
     {
-      if (TimersArray[timerHandle].expiredFlag != true && TimersArray[timerHandle].ticks != TIMIER_IDLE_VALUE)
+      if (TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag != true && TimersArray[GET_TIMER_SLOT(timerHandle)].ticks != TIMIER_IDLE_VALUE)
       {
         /* Increment timer ticks */
-        TimersArray[timerHandle].ticks++;
+        TimersArray[GET_TIMER_SLOT(timerHandle)].ticks++;
 
         /* Check if expires */
-        if (TimersArray[timerHandle].ticks == TimersArray[timerHandle].timeout)
+        if (TimersArray[GET_TIMER_SLOT(timerHandle)].ticks == TimersArray[GET_TIMER_SLOT(timerHandle)].timeout)
         {
-          TimersArray[timerHandle].expiredFlag = true;
+          TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag = true;
         }
         else
         {
@@ -140,17 +141,17 @@ SFTM_TimerRet_T SFTM_StartTimer(SFTM_TimerHandle_T timerHandle, SFTM_TimerType_T
 {
   SFTM_TimerRet_T ret;
 
-  if (TimersArray[timerHandle].ticks <= TimersArray[timerHandle].timeout)
+  if (TimersArray[GET_TIMER_SLOT(timerHandle)].ticks <= TimersArray[GET_TIMER_SLOT(timerHandle)].timeout)
   {
     ret = SFTM_TIMER_IN_USE;
   }
   else
   {
-    TimersArray[timerHandle].timerType    = timerType;
-    TimersArray[timerHandle].onExpire     = onExpire;
-    TimersArray[timerHandle].timeout      = timeout;
-    TimersArray[timerHandle].ticks        = 0;
-    TimersArray[timerHandle].expiredFlag  = false;
+    TimersArray[GET_TIMER_SLOT(timerHandle)].timerType    = timerType;
+    TimersArray[GET_TIMER_SLOT(timerHandle)].onExpire     = onExpire;
+    TimersArray[GET_TIMER_SLOT(timerHandle)].timeout      = timeout;
+    TimersArray[GET_TIMER_SLOT(timerHandle)].ticks        = 0;
+    TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag  = false;
 
     ret = SFTM_TIMER_STARTED;
   }
@@ -160,35 +161,35 @@ SFTM_TimerRet_T SFTM_StartTimer(SFTM_TimerHandle_T timerHandle, SFTM_TimerType_T
 
 void SFTM_StopTimer(SFTM_TimerHandle_T timerHandle)
 {
-  TimersArray[timerHandle].ticks        = TIMIER_IDLE_VALUE;
-  TimersArray[timerHandle].timeout      = 0;
-  TimersArray[timerHandle].expiredFlag  = false;
-  TimersArray[timerHandle].onExpire     = NULL;
+  TimersArray[GET_TIMER_SLOT(timerHandle)].ticks        = TIMIER_IDLE_VALUE;
+  TimersArray[GET_TIMER_SLOT(timerHandle)].timeout      = 0;
+  TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag  = false;
+  TimersArray[GET_TIMER_SLOT(timerHandle)].onExpire     = NULL;
 }
 
 void SFTM_RestartTimer(SFTM_TimerHandle_T timerHandle)
 {
-  TimersArray[timerHandle].ticks        = 0;
-  TimersArray[timerHandle].expiredFlag  = false;
+  TimersArray[GET_TIMER_SLOT(timerHandle)].ticks        = 0;
+  TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag  = false;
 }
 
 void SFTM_TimersEventsHandler(void)
 {
   for (SFTM_TimerHandle_T timerHandle = FIRST_TIMER_HANDLE; timerHandle < MAX_TIMER_SLOTS + FIRST_TIMER_HANDLE; timerHandle++)
   {
-    if (true == TimersArray[timerHandle].expiredFlag)
+    if (true == TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag)
     {
       /* Call timer event if is not NULL */
-      if (TimersArray[timerHandle].onExpire != NULL)
+      if (TimersArray[GET_TIMER_SLOT(timerHandle)].onExpire != NULL)
       {
-        TimersArray[timerHandle].onExpire();
+        TimersArray[GET_TIMER_SLOT(timerHandle)].onExpire();
       }
       else { /* Do nothing */ }
 
-      if (SFTM_ONE_SHOT == TimersArray[timerHandle].timerType)
+      if (SFTM_ONE_SHOT == TimersArray[GET_TIMER_SLOT(timerHandle)].timerType)
       {
         /* No more calls onExpire function */
-        TimersArray[timerHandle].expiredFlag = false;
+        TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag = false;
       }
       else // SFTM_AUTO_RELOAD
       {
@@ -204,7 +205,7 @@ void SFTM_TimersEventsHandler(void)
 
 SFTM_TimerStatus_T SFTM_GetTimerStatus(SFTM_TimerHandle_T timerHandle)
 {
-  if (TimersArray[timerHandle].ticks > TimersArray[timerHandle].timeout)
+  if (TimersArray[GET_TIMER_SLOT(timerHandle)].ticks > TimersArray[GET_TIMER_SLOT(timerHandle)].timeout)
   {
     return SFTM_EXPIRED;
   }
@@ -212,6 +213,16 @@ SFTM_TimerStatus_T SFTM_GetTimerStatus(SFTM_TimerHandle_T timerHandle)
   {
     return SFTM_NOT_EXPIRED;
   }
+}
+
+uint8_t SFTM_GetCurrentTimersNumberInSystem(void)
+{
+  return CurrentTimersNumber;
+}
+
+uint8_t SFTM_MaxTimersNumberInSystem(void)
+{
+  return MAX_TIMER_SLOTS;
 }
 
 /**
