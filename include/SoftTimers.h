@@ -180,6 +180,18 @@ SFTM_TimerStatus_T SFTM_GetTimerStatus(SFTM_TimerHandle_T timerHandle);
 
 
 /**
+ * @brief Function to getting timer tick.
+ *
+ *        This function gets timer tick number.
+ *
+ * @param [in] timerHandle of started timer.
+ *
+ * @return timer tick number.
+ */
+uint32_t SFTM_GetTimerTick(SFTM_TimerHandle_T timerHandle);
+
+
+/**
  * @brief Function for getting current timers number in system.
  *
  * @return number of timers

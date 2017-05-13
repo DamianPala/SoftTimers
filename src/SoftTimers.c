@@ -215,6 +215,11 @@ SFTM_TimerStatus_T SFTM_GetTimerStatus(SFTM_TimerHandle_T timerHandle)
   }
 }
 
+uint32_t SFTM_GetTimerTick(SFTM_TimerHandle_T timerHandle)
+{
+  return TimersArray[GET_TIMER_SLOT(timerHandle)].ticks;
+}
+
 uint8_t SFTM_GetCurrentTimersNumberInSystem(void)
 {
   return CurrentTimersNumber;
