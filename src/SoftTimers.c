@@ -24,22 +24,20 @@
  *        Configure System Tick ISR Clock, Timers Clock and some other things.
  */
 /**@{*/
-#define SYSTEM_TICK_ISR_CLK     1000000    ///< System Tick ISR Clock in Hz
-#define TIMERS_CLK              1000       ///< Timers Clock in Hz
-#define MAX_TIMER_SLOTS         8          ///< Adjust this value according to your needs
+#define SYSTEM_TICK_ISR_CLK           1000000    ///< System Tick ISR Clock in Hz
+#define TIMERS_CLK                    1000       ///< Timers Clock in Hz
+#define MAX_TIMER_SLOTS               8          ///< Adjust this value according to your needs
 /**@}*/
 
-#define TICK_CMP                    SYSTEM_TICK_ISR_CLK / TIMERS_CLK    ///< Comparison value for timers handler
-#define TIMIER_IDLE_VALUE           0xFFFFFFFF                          ///< Initial timer value
-#define MAX_TIMERS_NUMBER_REACHED   0xFF                                ///< Maximum number of timers in system
-#define FIRST_TIMER_HANDLE          1                                   ///< Do not touch it!!!
+#define TICK_CMP                      SYSTEM_TICK_ISR_CLK / TIMERS_CLK    ///< Comparison value for timers handler
+#define TIMIER_IDLE_VALUE             0xFFFFFFFF                          ///< Initial timer value
+#define MAX_TIMERS_NUMBER_REACHED     0xFF                                ///< Maximum number of timers in system
 
 #if (MAX_TIMER_SLOTS > MAX_TIMERS_NUMBER_REACHED )
   #error "Maximum timer slots reached! Please decrease timer slot number."
 #endif
 
 /*---------------------------- LOCAL FUNCTION-LIKE MACROS ------------------------------*/
-#define GET_TIMER_SLOT(timer_handle)          (timer_handle - FIRST_TIMER_HANDLE)
 
 /*======================================================================================*/
 /*                      ####### LOCAL TYPE DECLARATIONS #######                         */
@@ -72,12 +70,13 @@ static uint8_t CurrentTimersNumber = 0;           ///< Variable for storing curr
 /*======================================================================================*/
 void SFTM_Init(void)
 {
-  for (SFTM_TimerHandle_T timerHandle = FIRST_TIMER_HANDLE; timerHandle < MAX_TIMER_SLOTS + FIRST_TIMER_HANDLE; timerHandle++)
+  for (uint8_t timerCnt = 0; timerCnt < MAX_TIMER_SLOTS; timerCnt++)
   {
-    TimersArray[GET_TIMER_SLOT(timerHandle)].ticks        = TIMIER_IDLE_VALUE;
-    TimersArray[GET_TIMER_SLOT(timerHandle)].timeout      = 0;
-    TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag  = false;
-    TimersArray[GET_TIMER_SLOT(timerHandle)].onExpire     = NULL;
+    TimersArray[timerCnt].ticks        = TIMIER_IDLE_VALUE;
+    TimersArray[timerCnt].timeout      = 0;
+    TimersArray[timerCnt].expiredFlag  = false;
+    TimersArray[timerCnt].onExpire     = NULL;
+    TimersArray[timerCnt].pContext     = NULL;
   }
 }
 
@@ -92,17 +91,17 @@ void SFTM_TimersHandler(void)
     /* Clear base ticks */
     ticks = 0;
 
-    for (SFTM_TimerHandle_T timerHandle = FIRST_TIMER_HANDLE; timerHandle < MAX_TIMER_SLOTS + FIRST_TIMER_HANDLE; timerHandle++)
+    for (uint8_t timerCnt = 0; timerCnt < MAX_TIMER_SLOTS; timerCnt++)
     {
-      if (TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag != true && TimersArray[GET_TIMER_SLOT(timerHandle)].ticks != TIMIER_IDLE_VALUE)
+      if (TimersArray[timerCnt].expiredFlag != true && TimersArray[timerCnt].ticks != TIMIER_IDLE_VALUE)
       {
         /* Increment timer ticks */
-        TimersArray[GET_TIMER_SLOT(timerHandle)].ticks++;
+        TimersArray[timerCnt].ticks++;
 
         /* Check if expires */
-        if (TimersArray[GET_TIMER_SLOT(timerHandle)].ticks == TimersArray[GET_TIMER_SLOT(timerHandle)].timeout)
+        if (TimersArray[timerCnt].ticks == TimersArray[timerCnt].timeout)
         {
-          TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag = true;
+          TimersArray[timerCnt].expiredFlag = true;
         }
         else
         {
@@ -127,31 +126,32 @@ SFTM_TimerHandle_T SFTM_CreateTimer(void)
 
   if (CurrentTimersNumber < MAX_TIMER_SLOTS)
   {
-    newTimerNumber = ++CurrentTimersNumber;
+    newTimerNumber = CurrentTimersNumber++;
   }
   else
   {
     SFTM_ExecuteHardFault();
   }
 
-  return (SFTM_TimerHandle_T)newTimerNumber;
+  return (SFTM_TimerHandle_T)&TimersArray[newTimerNumber];
 }
 
-SFTM_TimerRet_T SFTM_StartTimer(SFTM_TimerHandle_T timerHandle, SFTM_TimerType_T timerType, SFTM_TimerCallback onExpire, SFTM_timeoutMS timeout)
+SFTM_TimerRet_T SFTM_StartTimer(SFTM_TimerHandle_T timerHandle, SFTM_TimerType_T timerType, SFTM_TimerCallback onExpire, void* pContext, SFTM_timeoutMS timeout)
 {
   SFTM_TimerRet_T ret;
 
-  if (TimersArray[GET_TIMER_SLOT(timerHandle)].ticks <= TimersArray[GET_TIMER_SLOT(timerHandle)].timeout)
+  if (timerHandle->ticks <= timerHandle->timeout)
   {
     ret = SFTM_TIMER_IN_USE;
   }
   else
   {
-    TimersArray[GET_TIMER_SLOT(timerHandle)].timerType    = timerType;
-    TimersArray[GET_TIMER_SLOT(timerHandle)].onExpire     = onExpire;
-    TimersArray[GET_TIMER_SLOT(timerHandle)].timeout      = timeout;
-    TimersArray[GET_TIMER_SLOT(timerHandle)].ticks        = 0;
-    TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag  = false;
+    timerHandle->timerType    = timerType;
+    timerHandle->onExpire     = onExpire;
+    timerHandle->pContext     = pContext;
+    timerHandle->timeout      = timeout;
+    timerHandle->ticks        = 0;
+    timerHandle->expiredFlag  = false;
 
     ret = SFTM_TIMER_STARTED;
   }
@@ -161,39 +161,40 @@ SFTM_TimerRet_T SFTM_StartTimer(SFTM_TimerHandle_T timerHandle, SFTM_TimerType_T
 
 void SFTM_StopTimer(SFTM_TimerHandle_T timerHandle)
 {
-  TimersArray[GET_TIMER_SLOT(timerHandle)].ticks        = TIMIER_IDLE_VALUE;
-  TimersArray[GET_TIMER_SLOT(timerHandle)].timeout      = 0;
-  TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag  = false;
-  TimersArray[GET_TIMER_SLOT(timerHandle)].onExpire     = NULL;
+  timerHandle->ticks        = TIMIER_IDLE_VALUE;
+  timerHandle->timeout      = 0;
+  timerHandle->expiredFlag  = false;
+  timerHandle->onExpire     = NULL;
+  timerHandle->pContext     = NULL;
 }
 
 void SFTM_RestartTimer(SFTM_TimerHandle_T timerHandle)
 {
-  TimersArray[GET_TIMER_SLOT(timerHandle)].ticks        = 0;
-  TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag  = false;
+  timerHandle->ticks        = 0;
+  timerHandle->expiredFlag  = false;
 }
 
 void SFTM_TimersEventsHandler(void)
 {
-  for (SFTM_TimerHandle_T timerHandle = FIRST_TIMER_HANDLE; timerHandle < MAX_TIMER_SLOTS + FIRST_TIMER_HANDLE; timerHandle++)
+  for (uint8_t timerCnt = 0; timerCnt < MAX_TIMER_SLOTS; timerCnt++)
   {
-    if (true == TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag)
+    if (true == TimersArray[timerCnt].expiredFlag)
     {
       /* Call timer event if is not NULL */
-      if (TimersArray[GET_TIMER_SLOT(timerHandle)].onExpire != NULL)
+      if (TimersArray[timerCnt].onExpire != NULL)
       {
-        TimersArray[GET_TIMER_SLOT(timerHandle)].onExpire();
+        TimersArray[timerCnt].onExpire(TimersArray[timerCnt].pContext);
       }
       else { /* Do nothing */ }
 
-      if (SFTM_ONE_SHOT == TimersArray[GET_TIMER_SLOT(timerHandle)].timerType)
+      if (SFTM_ONE_SHOT == TimersArray[timerCnt].timerType)
       {
         /* No more calls onExpire function */
-        TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag = false;
+        TimersArray[timerCnt].expiredFlag = false;
       }
       else // SFTM_AUTO_RELOAD
       {
-        SFTM_RestartTimer(timerHandle);
+        SFTM_RestartTimer(&TimersArray[timerCnt]);
       }
     }
     else
@@ -205,7 +206,7 @@ void SFTM_TimersEventsHandler(void)
 
 SFTM_TimerStatus_T SFTM_GetTimerStatus(SFTM_TimerHandle_T timerHandle)
 {
-  if (TimersArray[GET_TIMER_SLOT(timerHandle)].ticks > TimersArray[GET_TIMER_SLOT(timerHandle)].timeout)
+  if (timerHandle->ticks > timerHandle->timeout)
   {
     return SFTM_EXPIRED;
   }
@@ -217,7 +218,7 @@ SFTM_TimerStatus_T SFTM_GetTimerStatus(SFTM_TimerHandle_T timerHandle)
 
 uint32_t SFTM_GetTimerTick(SFTM_TimerHandle_T timerHandle)
 {
-  return TimersArray[GET_TIMER_SLOT(timerHandle)].ticks;
+  return timerHandle->ticks;
 }
 
 uint8_t SFTM_GetCurrentTimersNumberInSystem(void)

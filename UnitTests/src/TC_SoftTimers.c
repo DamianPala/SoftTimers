@@ -47,12 +47,12 @@ static uint32_t OnExpireCallsNumber = 0;
 /*======================================================================================*/
 /*                    ####### LOCAL FUNCTIONS PROTOTYPES #######                        */
 /*======================================================================================*/
-static void TimerOnExpireFunction(void);
+static void TimerOnExpireFunction(void *pContext);
 
 /*======================================================================================*/
 /*                   ####### LOCAL FUNCTIONS DEFINITIONS #######                        */
 /*======================================================================================*/
-static void TimerOnExpireFunction(void)
+static void TimerOnExpireFunction(void *pContext)
 {
   OnExpireCallsNumber++;
 }
@@ -74,12 +74,13 @@ TEST_TEAR_DOWN(SoftTimers)
 
 TEST(SoftTimers, SFTM_Init_should_InitializeTimersSlotsProperly)
 {
-  for (SFTM_TimerHandle_T timerHandle = FIRST_TIMER_HANDLE; timerHandle < MAX_TIMER_SLOTS + FIRST_TIMER_HANDLE; timerHandle++)
+  for (uint8_t timerCnt = 0; timerCnt < MAX_TIMER_SLOTS; timerCnt++)
   {
-    TEST_ASSERT_EQUAL_UINT32(TIMIER_IDLE_VALUE, TimersArray[GET_TIMER_SLOT(timerHandle)].ticks);
-    TEST_ASSERT_EQUAL_UINT32(0, TimersArray[GET_TIMER_SLOT(timerHandle)].timeout);
-    TEST_ASSERT_FALSE(TimersArray[GET_TIMER_SLOT(timerHandle)].expiredFlag);
-    TEST_ASSERT_NULL(TimersArray[GET_TIMER_SLOT(timerHandle)].onExpire);
+    TEST_ASSERT_EQUAL_UINT32(TIMIER_IDLE_VALUE, TimersArray[timerCnt].ticks);
+    TEST_ASSERT_EQUAL_UINT32(0, TimersArray[timerCnt].timeout);
+    TEST_ASSERT_FALSE(TimersArray[timerCnt].expiredFlag);
+    TEST_ASSERT_NULL(TimersArray[timerCnt].onExpire);
+    TEST_ASSERT_NULL(TimersArray[timerCnt].pContext);
   }
 }
 
@@ -91,7 +92,7 @@ TEST(SoftTimers, Timer_should_CallOnExpireOnlyOneTimeWhenItIsSingleShotType)
   SFTM_TimerHandle_T testedTimer;
 
   testedTimer = SFTM_CreateTimer();
-  SFTM_StartTimer(testedTimer, SFTM_ONE_SHOT, TimerOnExpireFunction, timeout);
+  SFTM_StartTimer(testedTimer, SFTM_ONE_SHOT, TimerOnExpireFunction, NULL, timeout);
   for (uint32_t cnt = 0; cnt < timersHandlerTicks; cnt++)
   {
     SFTM_TimersHandler();
@@ -107,7 +108,7 @@ TEST(SoftTimers, Timer_should_CallOnExpireWhenTimerReachesTimeoutOnFirstTimerSlo
   SFTM_TimerHandle_T testedTimer;
 
   testedTimer = SFTM_CreateTimer();
-  SFTM_StartTimer(testedTimer, SFTM_ONE_SHOT, TimerOnExpireFunction, timeout);
+  SFTM_StartTimer(testedTimer, SFTM_ONE_SHOT, TimerOnExpireFunction, NULL, timeout);
   for (uint32_t cnt = 0; cnt < timersHandlerTicks; cnt++)
   {
     SFTM_TimersHandler();
@@ -129,7 +130,7 @@ TEST(SoftTimers, Timer_should_CallOnExpireWhenTimerReachesTimeoutOnLastTimerSlot
   }
 
   testedTimer = testedTimersArray[MAX_TIMER_SLOTS - 1];
-  SFTM_StartTimer(testedTimer, SFTM_ONE_SHOT, TimerOnExpireFunction, timeout);
+  SFTM_StartTimer(testedTimer, SFTM_ONE_SHOT, TimerOnExpireFunction, NULL, timeout);
   for (uint32_t cnt = 0; cnt < timersHandlerTicks; cnt++)
   {
     SFTM_TimersHandler();
@@ -146,7 +147,7 @@ TEST(SoftTimers, Timer_should_CallOnExpireEveryExpirationWhenItIsAutoreloaded)
   SFTM_TimerHandle_T testedTimer;
 
   testedTimer = SFTM_CreateTimer();
-  SFTM_StartTimer(testedTimer, SFTM_AUTO_RELOAD, TimerOnExpireFunction, timeout);
+  SFTM_StartTimer(testedTimer, SFTM_AUTO_RELOAD, TimerOnExpireFunction, NULL, timeout);
   for (uint32_t cnt = 0; cnt < timersHandlerTicks; cnt++)
   {
     SFTM_TimersHandler();

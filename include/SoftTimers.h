@@ -33,52 +33,57 @@
 /*======================================================================================*/
 /*                     ####### EXPORTED TYPE DECLARATIONS #######                       */
 /*======================================================================================*/
-/*-------------------------------- OTHER TYPEDEFS --------------------------------------*/
-typedef uint8_t SFTM_TimerHandle_T;           ///< timer handle
-typedef void (*SFTM_TimerCallback)(void);     ///< timer callback on expire event
-typedef uint32_t SFTM_timeoutMS;              ///< time in ms
-typedef uint32_t SFTM_ticks;                  ///< timer ticks
+/*---------------------------- ALL TYPE DECLARATIONS -----------------------------------*/
+typedef enum SFTM_TimerRet_Tag SFTM_TimerRet_T;
+typedef enum SFTM_TimerType_Tag SFTM_TimerType_T;
+typedef enum SFTM_TimerStatus_Tag SFTM_TimerStatus_T;
+typedef struct SFTM_Timer_Tag SFTM_Timer_T;
+typedef void (*SFTM_TimerCallback)(void* pContext);     ///< timer callback on expire event
+typedef uint32_t SFTM_timeoutMS;                        ///< time in ms
+typedef uint32_t SFTM_ticks;                            ///< timer ticks
+typedef SFTM_Timer_T* SFTM_TimerHandle_T;               ///< timer handle
 
 /*------------------------------------- ENUMS ------------------------------------------*/
 /** @enum SFTM_TimerRet_T
  *        Timer return type enumerator for #SFTM_StartTimer.
  */
-typedef enum SFTM_TimerRet_Tag
+enum SFTM_TimerRet_Tag
 {
   SFTM_TIMER_STARTED = 0,    ///< Timer was started successfully
   SFTM_TIMER_IN_USE,         ///< Timer is already in use
-} SFTM_TimerRet_T;
+};
 
 /** @enum SFTM_TimerType_T
  *        Timer type enumerator.
  */
-typedef enum SFTM_TimerType_Tag
+enum SFTM_TimerType_Tag
 {
   SFTM_ONE_SHOT = 0,         ///< This timer type expiring only one time
   SFTM_AUTO_RELOAD,          ///< This timer type auto reloads after expiration
-} SFTM_TimerType_T;
+};
 
 /** @enum SFTM_TimerStatus_T
  *        Timers status expiration enumerator.
  */
-typedef enum SFTM_TimerStatus_Tag
+enum SFTM_TimerStatus_Tag
 {
   SFTM_NOT_EXPIRED = false,         ///< Timer is not expired
   SFTM_EXPIRED     = true           ///< Timer is expired
-} SFTM_TimerStatus_T;
+};
 
 /*------------------------------- STRUCT AND UNIONS ------------------------------------*/
 /** @struct SFTM_Timer_T
  *          Timer structure.
  */
-typedef struct SFTM_Timer_Tag
+struct SFTM_Timer_Tag
 {
   SFTM_TimerType_T timerType;           ///< Timer type
   volatile SFTM_ticks ticks;            ///< Timer ticks
   SFTM_timeoutMS timeout;               ///< Timer timeout
   volatile bool expiredFlag;            ///< Timer expired flag - used for expiration indication
   SFTM_TimerCallback onExpire;          ///< Pointer to function called on timer expiration event
-} SFTM_Timer_T;
+  void *pContext;                       ///< Pointer to context passed to callback function on expiration event
+};
 
 /*======================================================================================*/
 /*                    ####### EXPORTED OBJECT DECLARATIONS #######                      */
@@ -139,7 +144,7 @@ SFTM_TimerHandle_T SFTM_CreateTimer(void);
  *
  * @return void
  */
-SFTM_TimerRet_T SFTM_StartTimer(SFTM_TimerHandle_T timerHandle, SFTM_TimerType_T timerType, SFTM_TimerCallback onExpire, SFTM_timeoutMS timeout);
+SFTM_TimerRet_T SFTM_StartTimer(SFTM_TimerHandle_T timerHandle, SFTM_TimerType_T timerType, SFTM_TimerCallback onExpire, void* pContext, SFTM_timeoutMS timeout);
 
 
 /**
