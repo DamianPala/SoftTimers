@@ -38,7 +38,7 @@ typedef enum SFTM_TimerRet_Tag SFTM_TimerRet_T;
 typedef enum SFTM_TimerType_Tag SFTM_TimerType_T;
 typedef enum SFTM_TimerStatus_Tag SFTM_TimerStatus_T;
 typedef struct SFTM_Timer_Tag SFTM_Timer_T;
-typedef void (*SFTM_TimerCallback)(void* pContext);     ///< timer callback on expire event
+typedef void (*SFTM_TimerCallback_T)(void* pContext);   ///< timer callback on expire event
 typedef uint32_t SFTM_timeoutMS;                        ///< time in ms
 typedef uint32_t SFTM_ticks;                            ///< timer ticks
 typedef SFTM_Timer_T* SFTM_TimerHandle_T;               ///< timer handle
@@ -81,7 +81,7 @@ struct SFTM_Timer_Tag
   volatile SFTM_ticks ticks;            ///< Timer ticks
   SFTM_timeoutMS timeout;               ///< Timer timeout
   volatile bool expiredFlag;            ///< Timer expired flag - used for expiration indication
-  SFTM_TimerCallback onExpire;          ///< Pointer to function called on timer expiration event
+  SFTM_TimerCallback_T onExpire;        ///< Pointer to function called on timer expiration event
   void *pContext;                       ///< Pointer to context passed to callback function on expiration event
 };
 
@@ -144,7 +144,7 @@ SFTM_TimerHandle_T SFTM_CreateTimer(void);
  *
  * @return void
  */
-SFTM_TimerRet_T SFTM_StartTimer(SFTM_TimerHandle_T timerHandle, SFTM_TimerType_T timerType, SFTM_TimerCallback onExpire, void* pContext, SFTM_timeoutMS timeout);
+SFTM_TimerRet_T SFTM_StartTimer(SFTM_TimerHandle_T timerHandle, SFTM_TimerType_T timerType, SFTM_TimerCallback_T onExpire, void* pContext, SFTM_timeoutMS timeout);
 
 
 /**

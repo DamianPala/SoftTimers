@@ -136,7 +136,7 @@ SFTM_TimerHandle_T SFTM_CreateTimer(void)
   return (SFTM_TimerHandle_T)&TimersArray[newTimerNumber];
 }
 
-SFTM_TimerRet_T SFTM_StartTimer(SFTM_TimerHandle_T timerHandle, SFTM_TimerType_T timerType, SFTM_TimerCallback onExpire, void* pContext, SFTM_timeoutMS timeout)
+SFTM_TimerRet_T SFTM_StartTimer(SFTM_TimerHandle_T timerHandle, SFTM_TimerType_T timerType, SFTM_TimerCallback_T onExpire, void* pContext, SFTM_timeoutMS timeout)
 {
   SFTM_TimerRet_T ret;
 
